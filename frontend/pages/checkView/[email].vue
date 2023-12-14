@@ -1,61 +1,41 @@
 <template>
-	<div>
-		<div v-if="loading" class="text-gray-600">Loading...</div>
-		<div v-else>
-			<div v-if="formStatus" class="mt-8">
-				<h2 class="text-lg font-bold">Status Form:</h2>
-				<p v-if="formStatus === 'accepted'" class="text-green-600 font-semibold">
-					Form Diterima!
+	<div class="container mx-auto mt-8">
+		<div class="bg-gray-100 p-6 rounded-lg shadow-md">
+			<p class="text-lg font-bold mb-4">Informasi Status Form</p>
+			<div class="flex items-center">
+				<p class="text-gray-700 mr-2">Email:</p>
+				<p class="text-blue-700">{{ accept.email }}</p>
+			</div>
+			<div class="flex items-center mt-2">
+				<p class="text-gray-700 mr-2">Status:</p>
+				<p
+					v-if="accept.status === 'accepted'"
+					class="text-green-600 font-semibold"
+				>
+					Diterima
 				</p>
-				<p v-else-if="formStatus === 'waiting'" class="text-red-600 font-semibold">
-					Form Sedang Diproses
+				<p
+					v-else-if="accept.status === 'rejected'"
+					class="text-red-600 font-semibold"
+				>
+					Ditolak
 				</p>
-                <p v-else-if="formStatus === 'rejected'" class="text-red-600 font-semibold">
-					From Ditolak!
-				</p>
-				<p v-else class="text-yellow-600 font-semibold">
-					Menunggu Status Form...
-				</p>
+				<p v-else class="text-yellow-600 font-semibold">Menunggu</p>
 			</div>
 		</div>
 	</div>
 </template>
 
-<script>
-import { ref, onMounted } from "vue";
+<script setup>
+const route = useRoute().params.email;
+const { data: request } = await useFetch("http://localhost:5000/api/forms");
+const submissions = request._rawValue.docs;
 
-export default {
-	setup() {
-		const loading = ref(true);
-		const formStatus = ref(null);
+let accept;
 
-		onMounted(async () => {
-			const route = useRoute();
-			const email = route.params.email;
-
-			try {
-				const response = await fetch(
-					`http://localhost:5000/api/forms/${email}`
-				);
-
-				if (!response.ok) {
-					const errorMsg = (await response.json())?.error;
-					throw new Error(errorMsg);
-				}
-
-				const data = await response.json();
-				formStatus.value = data.status;
-			} catch (error) {
-				formStatus.value = { error: true, message: error.message };
-			} finally {
-				loading.value = false;
-			}
-		});
-
-		return {
-			loading,
-			formStatus,
-		};
-	},
-};
+submissions.forEach(submission => {
+	if (submission.email === route) {
+		accept = submission;
+	}
+});
 </script>
