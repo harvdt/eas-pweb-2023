@@ -29,13 +29,13 @@
 <script setup>
 const route = useRoute().params.email;
 const { data: request } = await useFetch("http://localhost:5000/api/forms");
-const submissions = request._rawValue.docs;
+const forms = request._rawValue.docs;
 
 let accept;
 
-submissions.forEach(submission => {
-	if (submission.email === route) {
-		accept = submission;
+forms.forEach(form => {
+	if (form.email === route) {
+		accept = form;
 	}
 });
 </script>
